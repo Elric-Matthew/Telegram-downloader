@@ -1,3 +1,4 @@
 my_session.session
 my_session.session-journal
 config.toml
+proxy.py
