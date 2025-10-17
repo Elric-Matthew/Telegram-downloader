@@ -8,6 +8,7 @@ from telethon.errors import UsernameNotOccupiedError
 from tqdm import tqdm
 from telethon import TelegramClient
 import logging
+
 import toml
 
 with open("config.toml", "r") as f:
@@ -47,6 +48,8 @@ def get_download_folder():
 
 
 async def get_chat_id_to_download_from():
+    global chat_id
+
     try:
         await client.get_entity(chat_id)
         return True
@@ -57,19 +60,24 @@ async def get_chat_id_to_download_from():
 
 ## progress_bar block
 
+import time
 
 def make_progress_bar(total_size, label):  ## defining progress_bar
     progress_bar = tqdm(
         total=total_size, unit="B", unit_scale=True, desc=label, leave=False
     )
 
+    last_update = {"time": time.time()}  # store last update timestamp
+
     def callback(current, total):
         progress_bar.total = total
         progress_bar.n = current
-        progress_bar.refresh()
+        now = time.time()
+        if now - last_update["time"] >= 30:  # only refresh every 1 second
+            progress_bar.refresh()
+            last_update["time"] = now
 
     return callback
-
 
 ## producer-worker model for download
 
